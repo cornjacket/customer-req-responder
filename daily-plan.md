@@ -1,14 +1,10 @@
-# Daily plan — YYYY-MM-DD
+# Daily plan — 2026-05-09
 
-<!--
-  Forward-looking companion to log.md. Single-day scope. Always overwritten,
-  never appended. Aggregated across repos by ai-project-status into
-  daily-plan-summary.md.
+Walk the initial brainstorm (`spec-rough-draft.md` + `open-questions.md`) through the Get-Shit-Done methodology — resolve open questions, then move from rough draft into a structured SPEC, discuss, and plan.
 
-  - First line MUST be `# Daily plan — YYYY-MM-DD` (the date is the staleness signal).
-  - Body: one short paragraph + a small ASCII diagram of the day's shape.
-  - At end-of-session signoff, overwrite with tomorrow's plan (Friday writes Monday's).
-  - On Saturday/Sunday a Friday plan is still considered fresh.
--->
-
-(no plan yet — replace this body and update the date in the header above)
+```
+brainstorm ──▶ resolve Qs ──▶ SPEC ──▶ discuss ──▶ plan
+  (done)        (today)       │         │           │
+                              ▼         ▼           ▼
+                         spec-phase  discuss-phase  plan-phase
+```
