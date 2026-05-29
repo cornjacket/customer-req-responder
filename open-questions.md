@@ -65,6 +65,53 @@ Questions surfaced after the additions to `spec-rough-draft.md`. Answer inline, 
 
 ---
 
+## Workflow-decision session (2026-05-29) — eval & TDD discussion points
+
+Context: decided to use **Superpowers** (not GSD) for this project. Superpowers is TDD-first and
+has no LLM/eval phase, so two design points surfaced that we must own deliberately. Capturing here
+for the discuss/spec session — these refine open questions #2, #3, #13 and the pre-existing
+"Eval pass criteria" / "Deflection target" items.
+
+### Root framing — two kinds of code, two kinds of "correctness"
+The app has (a) **deterministic plumbing** (XML parse, urgency routing, escalation, malformed
+handling) where the exact output is knowable in advance, and (b) **non-deterministic generation**
+(the Gemini draft reply) where the same email yields different valid prose and "good" is a
+judgment call. These need different correctness tools; most confusion comes from using one tool for
+both. → TDD owns (a); an eval loop owns (b).
+
+### Discussion point 1 — we need an eval, and the framework won't remind us
+- **Problem:** the *generation* half has no expected value to assert, so unit tests can't say if it's
+  good. The thing that answers "is it good?" is an **eval**: a small labeled dataset (~20 emails) →
+  run the pipeline → score each output → aggregate number to compare prompt changes against.
+- **Scoring via Gemini-as-judge:** a second Gemini call grades the first ("here's the email + the
+  drafted reply — does it address the request? is the tone right for `urgent`? pass/fail + reason").
+- **Why it's not optional:** the success metric *is* deflection rate (% auto-handled without
+  escalation) — can't measure success without an eval harness.
+- **What GSD gave that Superpowers doesn't:** `gsd-ai-integration-phase` (AI-SPEC forces designing
+  the eval — failure modes, judge rubric, reference dataset — before coding) and `gsd-eval-review`
+  (after-the-fact coverage audit). Superpowers is silent on grading non-deterministic output, so
+  nothing will prompt us to build the eval.
+- **Mitigation / decision to make:** hand-spec the eval (small — one judge prompt + ~20 fixtures +
+  a tally script), OR author our own reusable **`eval` skill** (fits the ai-builder framework goal).
+  → Open: which path? what does the judge rubric check? pass threshold? where does the fixture set
+  live?
+
+### Discussion point 2 — TDD structurally can't cover generation
+- **Problem:** TDD assumes you can write the exact correct output in advance. True for plumbing
+  (`parse(...) → {urgency:"urgent"}`, `route({urgency:"unknown"}) → escalate()`), false for the
+  draft (Gemini won't reproduce an exact string; a different good reply would fail the test).
+- **The trap:** Superpowers will show all-green while the most valuable + fragile part (reply
+  quality) has zero coverage — green means "plumbing works," not "product works."
+- **Mitigation / decision:** split correctness by the two-kinds distinction — TDD the plumbing hard
+  (let Superpowers drive), let the Gemini-as-judge eval loop own generation quality, run them as
+  two separate disciplines.
+
+> Net: discussion points 1 and 2 are the same gap from two sides — Superpowers covers the
+> deterministic half and is blind to the non-deterministic half, which is where the product's value
+> and the success metric live. Go in knowing it; stand up the eval loop alongside TDD.
+
+---
+
 ## Pre-existing open questions from spec-rough-draft.md
 
 - **Pure-LLM realism** — is unaided generation good enough, or will we need RAG / templates / account context sooner than v1+1?
